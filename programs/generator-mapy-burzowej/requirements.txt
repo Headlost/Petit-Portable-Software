@@ -1,0 +1,4 @@
+pillow
+geopy
+requests
+customtkinter
