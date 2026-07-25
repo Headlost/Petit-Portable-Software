@@ -26,4 +26,6 @@ Wsparcie jest całkowicie dobrowolne i nie wpływa na dostępność ani czas dzi
 
 ## Programy
 
-Lista dostępnych programów pojawi się tutaj wraz z kolejnymi publikacjami.
+| Program | Wersja | Opis |
+| --- | --- | --- |
+| [Generator Mapy Burzowej](programs/generator-mapy-burzowej/) | 5.0.0 | Tworzenie map aktywności burzowej z oznaczeniem wybranej lokalizacji. |
