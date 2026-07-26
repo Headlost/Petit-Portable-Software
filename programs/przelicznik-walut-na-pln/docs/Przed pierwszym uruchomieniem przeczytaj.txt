@@ -1,0 +1,31 @@
+Instrukcja krok po kroku:
+
+1.Otwórz Microsoft Store – skrót: Naciśnij kombinację klawiszy Windows + R, a następnie wpisz lub wklej (bez cudzysłowu) "ms-windows-store:" (koniecznie cała nazwa, wraz z dwoma dwukropkami na końcu).
+
+2.Po otwarciu Microsoft Store wyszukaj i zainstaluj Python 3.12 – jest to język programowania niezbędny do dalszej obsługi.
+
+3.Skopiuj polecenie "pip install requests" (bez cudzysłowu) – możesz użyć prawego przycisku myszy lub kombinacji Ctrl + C.
+
+4.Ponownie naciśnij Windows + R, a następnie wpisz CMD.
+
+5.Po otwarciu okna CMD wklej wcześniej skopiowany tekst "pip install requests" i naciśnij Enter (możesz użyć prawego przycisku myszy – opcji „Wklej” lub kombinacji Ctrl + V).
+
+6.Po zakończeniu instalacji bedzie tylko mrugac kursor tekstowy to oznaca ze wszystko przebiegło pomyslnie i mozna zamknąć okno CMD.
+
+Instalacja zakończona.
+
+Otwórz program „Przelicznik € i $ na PLN”.
+
+
+
+
+Instrukcja – wersja skrócona:
+
+1.Zainstaluj Python 3.12 ze sklepu Microsoft Store.
+2.Naciśnij Windows + R i wpisz CMD.
+3.W oknie CMD wpisz pip install requests.
+4.Po zakończeniu instalacji zamknij okno CMD.
+
+Instalacja zakończona.
+
+Otwórz program „Przelicznik € i $ na PLN”.

@@ -29,3 +29,4 @@ Wsparcie jest całkowicie dobrowolne i nie wpływa na dostępność ani czas dzi
 | Program | Wersja | Opis |
 | --- | --- | --- |
 | [Generator Mapy Burzowej](programs/generator-mapy-burzowej/) | 5.0.0 | Tworzenie map aktywności burzowej z oznaczeniem wybranej lokalizacji. |
+| [Przelicznik walut na PLN](programs/przelicznik-walut-na-pln/) | 4.0.0 | Przeliczanie EUR i USD na PLN według średnich kursów NBP. |
