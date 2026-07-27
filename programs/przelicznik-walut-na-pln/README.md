@@ -1,12 +1,12 @@
 # Przelicznik walut na PLN
 
-**Wersja 4.0.0 · Windows · aplikacja portable**
+**Wersja 4.5.0 · Windows · aplikacja portable**
 
-Przelicznik walut na PLN to niewielkie narzędzie do szybkiego przeliczania euro (EUR) i dolarów amerykańskich (USD) na złote oraz złotych na wybraną walutę. Program korzysta z ostatnich opublikowanych średnich kursów Narodowego Banku Polskiego.
+Przelicznik walut na PLN to niewielkie narzędzie do szybkiego przeliczania euro (EUR) i dolarów amerykańskich (USD) na złote oraz złotych na wybraną walutę. Program korzysta z ostatnich opublikowanych średnich kursów Narodowego Banku Polskiego i zawiera wysuwany kalkulator.
 
 Aplikacja działa w wersji portable, dlatego nie wymaga instalacji. Wystarczy pobrać i uruchomić plik EXE.
 
-![Aktualny wygląd Przelicznika walut na PLN](docs/images/gui-v4.png)
+![Aktualny wygląd Przelicznika walut na PLN 4.5.0](docs/images/gui-v4.5.png)
 
 ## Najważniejsze możliwości
 
@@ -16,12 +16,21 @@ Aplikacja działa w wersji portable, dlatego nie wymaga instalacji. Wystarczy po
 - automatyczne zaokrąglanie przeliczonych kwot do dwóch miejsc po przecinku,
 - automatyczne pobieranie ostatniego opublikowanego średniego kursu NBP,
 - szybkie przełączanie między EUR i USD,
-- prezentowanie daty aktualności danych,
-- informowanie o kursach pochodzących z ostatniego dnia roboczego,
+- prezentowanie daty aktualności danych i informowanie o kursach z ostatniego dnia roboczego,
 - kopiowanie obliczonej kwoty wraz z oznaczeniem odpowiedniej waluty **€ i $**,
-- możliwość wklejania skopiowanej wartości między innymi do kalkulatora — oznaczenie waluty nie zakłóca dalszych obliczeń,
 - przypinanie okna nad pozostałymi aplikacjami,
 - praca bez instalacji.
+
+## Wbudowany kalkulator
+
+Wysuwany panel pozwala wykonywać podstawowe działania bez opuszczania programu oraz:
+
+- bezpośrednio przekazywać i sumować przeliczone kwoty,
+- obsługiwać działania za pomocą klawiatury numerycznej,
+- kopiować wynik wraz z oznaczeniem waluty,
+- korzystać z przewijanej historii i kopiować wcześniejsze wyniki.
+
+![Przelicznik walut na PLN z wysuniętym kalkulatorem](docs/images/gui-v4.5-kalkulator.png)
 
 ## Pobieranie kursów
 
