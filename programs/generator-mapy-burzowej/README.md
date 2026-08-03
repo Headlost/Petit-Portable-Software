@@ -20,6 +20,15 @@ Aplikacja działa w wersji portable, dlatego nie wymaga instalacji. Wystarczy ur
 
 Do pobierania map i rozpoznawania lokalizacji wymagane jest połączenie z internetem. Program przyjmuje wyłącznie dni, dla których mapa jest już dostępna — najpóźniej dzień wczorajszy.
 
+## Źródła danych
+
+Program korzysta z dwóch zewnętrznych źródeł danych:
+
+- **[OpenStreetMap](https://www.openstreetmap.org/)** — lokalizacja wpisana przez użytkownika jest rozpoznawana za pomocą geokodera **Nominatim**, działającego na danych OpenStreetMap,
+- **[Burzowo.info](https://burzowo.info/)** — źródło map przedstawiających aktywność burzową dla wybranego dnia.
+
+Podczas tworzenia mapy dane lokalizacji są wysyłane do usługi Nominatim w celu ustalenia współrzędnych, a wybrana data jest używana do pobrania odpowiedniej mapy z Burzowo.info.
+
 ## Prosta obsługa
 
 Do wygenerowania mapy wystarczy podać lokalizację. Może to być pełny adres, sama miejscowość, kod pocztowy, nazwa ulicy albo współrzędne geograficzne. Program automatycznie rozpoznaje wprowadzone dane i przygotowuje czytelną mapę burzową dla wskazanego obszaru.
