@@ -1,23 +1,23 @@
 # Przelicznik walut na PLN
 
-**Wersja 4.5.0 · Windows · aplikacja portable**
+**Wersja 4.6.0 · Windows · aplikacja portable**
 
-Przelicznik walut na PLN to niewielkie narzędzie do szybkiego przeliczania euro (EUR) i dolarów amerykańskich (USD) na złote oraz złotych na wybraną walutę. Program korzysta z ostatnich opublikowanych średnich kursów Narodowego Banku Polskiego i zawiera wysuwany kalkulator.
+Przelicznik walut na PLN pozwala szybko przeliczać euro (EUR), dolary amerykańskie (USD), funty brytyjskie (GBP), franki szwajcarskie (CHF), juany chińskie (CNY) i korony czeskie (CZK) na złote oraz złote na wybraną walutę. Program korzysta z ostatnich opublikowanych średnich kursów Narodowego Banku Polskiego i zawiera wysuwany kalkulator.
 
-Aplikacja działa w wersji portable, dlatego nie wymaga instalacji. Wystarczy pobrać i uruchomić plik EXE.
+Aplikacja działa w wersji portable, dlatego nie wymaga instalacji.
 
-![Aktualny wygląd Przelicznika walut na PLN 4.5.0](docs/images/gui-v4.5.png)
+![Aktualny wygląd Przelicznika walut na PLN 4.6.0](docs/images/gui-v4.6.png)
 
 ## Najważniejsze możliwości
 
-- przeliczanie euro (EUR) i dolarów amerykańskich (USD) na złote,
-- przeliczanie złotych na EUR lub USD,
+- przeliczanie EUR, USD, GBP, CHF, CNY i CZK na złote,
+- przeliczanie złotych na dowolną z sześciu obsługiwanych walut,
 - **prezentowanie kursów walut z dokładnością do czterech miejsc po przecinku,**
 - automatyczne zaokrąglanie przeliczonych kwot do dwóch miejsc po przecinku,
-- automatyczne pobieranie ostatniego opublikowanego średniego kursu NBP,
-- szybkie przełączanie między EUR i USD,
+- automatyczne pobieranie ostatnich opublikowanych średnich kursów NBP,
+- szybkie przełączanie walut za pomocą selektora w trzech rzędach,
 - prezentowanie daty aktualności danych i informowanie o kursach z ostatniego dnia roboczego,
-- kopiowanie obliczonej kwoty wraz z oznaczeniem odpowiedniej waluty **€ i $**,
+- kopiowanie kwoty wraz z oznaczeniem waluty: **€, $, £, CHF, ¥, Kč lub zł**,
 - przypinanie okna nad pozostałymi aplikacjami,
 - praca bez instalacji.
 
@@ -30,17 +30,23 @@ Wysuwany panel pozwala wykonywać podstawowe działania bez opuszczania programu
 - kopiować wynik wraz z oznaczeniem waluty,
 - korzystać z przewijanej historii i kopiować wcześniejsze wyniki.
 
-![Przelicznik walut na PLN z wysuniętym kalkulatorem](docs/images/gui-v4.5-kalkulator.png)
+![Przelicznik walut na PLN 4.6.0 z wysuniętym kalkulatorem](docs/images/gui-v4.6-kalkulator.png)
+
+## Pobieranie
+
+Gotowy program jest dostępny w sekcji [GitHub Releases](https://github.com/Headlost/Petit-Portable-Software/releases). Pobierz plik `Przelicznik-walut-na-PLN.exe` i uruchom go w systemie Windows.
+
+Przy pierwszym uruchomieniu, zależnie od ustawień systemu, może pojawić się komunikat Microsoft Defender SmartScreen. W takim przypadku kliknij **Więcej informacji**, a następnie **Uruchom mimo to**.
 
 ## Pobieranie kursów
 
 Połączenie z internetem jest potrzebne do pobrania aktualnych kursów. Jeżeli NBP nie opublikował nowej tabeli, na przykład podczas weekendu lub dnia wolnego, program wykorzystuje ostatni dostępny kurs i informuje, że kolejna aktualizacja nastąpi w najbliższy dzień roboczy.
 
-W przypadku braku połączenia program wyświetla ostrzeżenie i korzysta z jawnie oznaczonego kursu awaryjnego.
+W przypadku braku połączenia program wyświetla ostrzeżenie i korzysta z jawnie oznaczonego kursu awaryjnego właściwego dla wybranej waluty.
 
 ## Źródło danych i prywatność
 
-Program korzysta z [Web API Narodowego Banku Polskiego](https://api.nbp.pl/) i pobiera ostatnie opublikowane średnie kursy EUR oraz USD z tabeli A.
+Program korzysta z [Web API Narodowego Banku Polskiego](https://api.nbp.pl/) i pobiera ostatnie opublikowane średnie kursy EUR, USD, GBP, CHF, CNY oraz CZK z tabeli A.
 
 Do API NBP wysyłany jest wyłącznie kod wybranej waluty. Wprowadzane kwoty nie są przesyłane do internetu — wszystkie obliczenia wykonywane są lokalnie na komputerze użytkownika.
 

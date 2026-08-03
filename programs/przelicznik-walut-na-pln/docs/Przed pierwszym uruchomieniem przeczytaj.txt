@@ -1,31 +1,20 @@
-Instrukcja krok po kroku:
+PRZELICZNIK WALUT NA PLN 4.6.0
 
-1.Otwórz Microsoft Store – skrót: Naciśnij kombinację klawiszy Windows + R, a następnie wpisz lub wklej (bez cudzysłowu) "ms-windows-store:" (koniecznie cała nazwa, wraz z dwoma dwukropkami na końcu).
+Wersja portable:
 
-2.Po otwarciu Microsoft Store wyszukaj i zainstaluj Python 3.12 – jest to język programowania niezbędny do dalszej obsługi.
+1. Pobierz plik „Przelicznik-walut-na-PLN.exe” z sekcji GitHub Releases.
+2. Uruchom pobrany plik. Program nie wymaga instalacji.
+3. Jeżeli przy pierwszym uruchomieniu pojawi się Microsoft Defender SmartScreen,
+   wybierz „Więcej informacji”, a następnie „Uruchom mimo to”.
 
-3.Skopiuj polecenie "pip install requests" (bez cudzysłowu) – możesz użyć prawego przycisku myszy lub kombinacji Ctrl + C.
+Połączenie z internetem jest potrzebne do pobierania kursów NBP.
 
-4.Ponownie naciśnij Windows + R, a następnie wpisz CMD.
+Uruchomienie kodu źródłowego:
 
-5.Po otwarciu okna CMD wklej wcześniej skopiowany tekst "pip install requests" i naciśnij Enter (możesz użyć prawego przycisku myszy – opcji „Wklej” lub kombinacji Ctrl + V).
+1. Zainstaluj Python.
+2. W katalogu programu wykonaj:
 
-6.Po zakończeniu instalacji bedzie tylko mrugac kursor tekstowy to oznaca ze wszystko przebiegło pomyslnie i mozna zamknąć okno CMD.
+   python -m pip install -r requirements.txt
+   python src/przelicznik_walut_na_pln.pyw
 
-Instalacja zakończona.
-
-Otwórz program „Przelicznik € i $ na PLN”.
-
-
-
-
-Instrukcja – wersja skrócona:
-
-1.Zainstaluj Python 3.12 ze sklepu Microsoft Store.
-2.Naciśnij Windows + R i wpisz CMD.
-3.W oknie CMD wpisz pip install requests.
-4.Po zakończeniu instalacji zamknij okno CMD.
-
-Instalacja zakończona.
-
-Otwórz program „Przelicznik € i $ na PLN”.
+Program obsługuje EUR, USD, GBP, CHF, CNY i CZK.

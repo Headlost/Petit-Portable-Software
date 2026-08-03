@@ -22,10 +22,23 @@ COLOR_ACCENT_TEXT = "#111827"
 COLOR_TEXT = "#F4F1E8"
 COLOR_MUTED = "#98A6BA"
 
-APP_TITLE = "Przelicznik walut $ / € → PLN"
-APP_VERSION = "4.5.0"
+APP_TITLE = "Przelicznik walut → PLN"
+APP_VERSION = "4.6.0"
 APP_AUTHOR = "Beniamin Żak"
-APP_DESCRIPTION = "Przelicza kwoty USD i EUR na PLN według średnich kursów NBP i zawiera podręczny kalkulator."
+APP_DESCRIPTION = (
+    "Przelicza EUR, USD, GBP, CHF, CNY i CZK na PLN według średnich "
+    "kursów NBP i zawiera podręczny kalkulator."
+)
+
+WALUTY = {
+    "EUR": {"nazwa": "Euro", "symbol": "€", "kurs_awaryjny": 4.50},
+    "USD": {"nazwa": "Dolar amerykański", "symbol": "$", "kurs_awaryjny": 4.00},
+    "GBP": {"nazwa": "Funt brytyjski", "symbol": "£", "kurs_awaryjny": 5.20},
+    "CHF": {"nazwa": "Frank szwajcarski", "symbol": "CHF", "kurs_awaryjny": 4.75},
+    "CNY": {"nazwa": "Juan chiński", "symbol": "¥", "kurs_awaryjny": 0.55},
+    "CZK": {"nazwa": "Korona czeska", "symbol": "Kč", "kurs_awaryjny": 0.18},
+}
+symbol_waluty = {kod: dane["symbol"] for kod, dane in WALUTY.items()}
 
 calculator_expression = ""
 calculator_just_evaluated = False
@@ -35,7 +48,7 @@ calculator_history_open = False
 calculator_history_animating = False
 calculator_notice_job = None
 
-CALCULATOR_PANEL_Y = 158
+CALCULATOR_PANEL_Y = 222
 CALCULATOR_PANEL_HEIGHT = 455
 CALCULATOR_CONTENT_Y = 42
 HISTORY_EXPANSION = 146
@@ -54,7 +67,7 @@ def pobierz_sredni_kurs(waluta):
         data_aktualizacji = effective_date + " " + current_time
         return kurs, data_aktualizacji, None
     except Exception as e:
-        return 4.50, "brak danych", str(e)
+        return WALUTY[waluta]["kurs_awaryjny"], "brak danych", str(e)
 
 
 def tekst_statusu_danych(data_kursu_z_czasem, dzis=None):
@@ -156,7 +169,7 @@ def odswiez_wyswietlacz_kalkulatora(text=None):
 
 
 def symbol_waluty_z_tekstu(text):
-    for symbol in ("zł", "€", "$"):
+    for symbol in ("zł", *sorted(set(symbol_waluty.values()), key=len, reverse=True)):
         if symbol in text:
             return symbol
     return ""
@@ -427,7 +440,6 @@ def pokaz_informacje_o_autorze():
     )
 
 # Ustawienie waluty i kursu
-symbol_waluty = {"EUR": "€", "USD": "$"}
 SPINNER_FRAMES = ("◐", "◓", "◑", "◒")
 loading_active = False
 spinner_frame_index = 0
@@ -442,11 +454,23 @@ def animuj_ladowanie():
     root.after(110, animuj_ladowanie)
 
 
-def rozpocznij_ladowanie():
+def ustaw_wyglad_przyciskow_walut(wybrana_waluta):
+    for kod, button in currency_buttons.items():
+        aktywny = kod == wybrana_waluta
+        button.configure(
+            fg_color=COLOR_ACCENT if aktywny else COLOR_INPUT,
+            hover_color=COLOR_ACCENT_HOVER if aktywny else COLOR_CARD_HOVER,
+            text_color=COLOR_ACCENT_TEXT if aktywny else COLOR_TEXT,
+        )
+
+
+def rozpocznij_ladowanie(waluta):
     global loading_active, spinner_frame_index
     loading_active = True
     spinner_frame_index = 0
-    selector.configure(state="disabled")
+    ustaw_wyglad_przyciskow_walut(waluta)
+    for button in currency_buttons.values():
+        button.configure(state="disabled")
     loading_label.place(relx=0.95, rely=0.72, anchor="center")
     animuj_ladowanie()
 
@@ -455,7 +479,8 @@ def zakoncz_ladowanie():
     global loading_active
     loading_active = False
     loading_label.place_forget()
-    selector.configure(state="normal")
+    for button in currency_buttons.values():
+        button.configure(state="normal")
 
 
 def zastosuj_nowy_kurs(waluta, kurs, data, blad):
@@ -480,11 +505,13 @@ def zastosuj_nowy_kurs(waluta, kurs, data, blad):
         messagebox.showwarning(
             "Błąd",
             f"Nie udało się pobrać aktualnego kursu {waluta}: {blad}.\n"
-            f"Użyto kursu awaryjnego: 4.50 PLN za 1 {waluta}",
+            f"Użyto kursu awaryjnego: {kurs:.4f} PLN za 1 {waluta}".replace(".", ","),
         )
 
 def ustaw_walute(waluta):
-    rozpocznij_ladowanie()
+    if waluta not in WALUTY or loading_active:
+        return
+    rozpocznij_ladowanie(waluta)
 
     def pobierz_w_tle():
         wynik = pobierz_sredni_kurs(waluta)
@@ -495,12 +522,12 @@ def ustaw_walute(waluta):
 # --- GUI ---
 root = ctk.CTk()
 root.title(APP_TITLE)
-root.geometry("620x740")
+root.geometry("620x776")
 root.resizable(False, False)
 root.configure(fg_color=COLOR_WINDOW)
 apply_window_icon(root)
 
-main_content = ctk.CTkFrame(root, width=620, height=740, fg_color="transparent")
+main_content = ctk.CTkFrame(root, width=620, height=776, fg_color="transparent")
 main_content.place(x=0, y=0)
 main_content.pack_propagate(False)
 
@@ -521,9 +548,9 @@ def toggle_topmost():
 
 COLLAPSED_WIDTH = 620
 EXPANDED_WIDTH = 920
-WINDOW_HEIGHT = 740
+WINDOW_HEIGHT = 776
 ABOUT_COLLAPSED_X = 496
-ABOUT_Y = 699
+ABOUT_Y = 735
 calculator_open = False
 calculator_animating = False
 calculator_collapsed_position = None
@@ -605,7 +632,7 @@ aktualna_waluta = "EUR"
 aktualny_kurs = 0.0
 data_aktualizacji = "pobieranie..."
 
-ctk.CTkLabel(main_content, text="Przelicznik walut $ / € → PLN",
+ctk.CTkLabel(main_content, text="Przelicznik walut → PLN",
              text_color=COLOR_TEXT,
              font=ctk.CTkFont("Segoe UI", 28, "bold")).pack(
                  anchor="w", padx=30, pady=(26, 8))
@@ -637,19 +664,41 @@ calculator_toggle_arrow = ctk.CTkLabel(
     font=ctk.CTkFont("Segoe UI", 21, "bold"),
 )
 
-selector = ctk.CTkSegmentedButton(
-    main_content,
-    values=["EUR", "USD"],
-    command=ustaw_walute,
-    fg_color=COLOR_INPUT,
-    selected_color=COLOR_ACCENT,
-    selected_hover_color=COLOR_ACCENT_HOVER,
-    unselected_color=COLOR_INPUT,
-    unselected_hover_color=COLOR_CARD_HOVER,
-    text_color=COLOR_TEXT,
+currency_selector = ctk.CTkFrame(main_content, fg_color="transparent")
+currency_selector.pack(fill="x", padx=30, pady=(0, 16))
+for column in (0, 1):
+    currency_selector.grid_columnconfigure(column, weight=1, uniform="currency")
+
+currency_buttons = {}
+uklad_walut = (
+    ("EUR", "USD"),
+    ("GBP", "CHF"),
+    ("CNY", "CZK"),
 )
-selector.set("EUR")
-selector.pack(fill="x", padx=30, pady=(0, 16))
+for row, codes in enumerate(uklad_walut):
+    for column, kod in enumerate(codes):
+        dane = WALUTY[kod]
+        button = ctk.CTkButton(
+            currency_selector,
+            text=f"{kod} · {dane['nazwa']}",
+            height=28,
+            corner_radius=6,
+            fg_color=COLOR_INPUT,
+            hover_color=COLOR_CARD_HOVER,
+            border_width=0,
+            text_color=COLOR_TEXT,
+            command=lambda wybrany=kod: ustaw_walute(wybrany),
+        )
+        button.grid(
+            row=row,
+            column=column,
+            padx=(0, 3) if column == 0 else (3, 0),
+            pady=(0, 3) if row < len(uklad_walut) - 1 else 0,
+            sticky="ew",
+        )
+        currency_buttons[kod] = button
+
+ustaw_wyglad_przyciskow_walut("EUR")
 
 rate_card = ctk.CTkFrame(main_content, corner_radius=18, fg_color=COLOR_CARD)
 rate_card.pack(fill="x", padx=30, pady=(0, 16))
