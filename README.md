@@ -30,3 +30,4 @@ Wsparcie jest całkowicie dobrowolne i nie wpływa na dostępność ani czas dzi
 | --- | --- | --- |
 | [Generator Mapy Burzowej](programs/generator-mapy-burzowej/) | 5.0.0 | Tworzenie map aktywności burzowej z oznaczeniem wybranej lokalizacji. |
 | [Przelicznik walut na PLN](programs/przelicznik-walut-na-pln/) | 4.6.0 | Przeliczanie EUR, USD, GBP, CHF, CNY i CZK według kursów NBP z wysuwanym kalkulatorem. |
+| [Konwerter HEIC na JPG](programs/konwerter-heic-na-jpg/) | 2.0.0 | Zbiorcza konwersja obrazów HEIC do JPG z wyborem folderu zapisu i obsługą języków polskiego oraz angielskiego. |
