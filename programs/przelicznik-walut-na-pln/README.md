@@ -1,12 +1,19 @@
 # Przelicznik walut na PLN
 
-**Wersja 4.6.0 · Windows · aplikacja portable**
+**Wersja 4.7.0 · Windows · aplikacja portable**
 
 Przelicznik walut na PLN pozwala szybko przeliczać euro (EUR), dolary amerykańskie (USD), funty brytyjskie (GBP), franki szwajcarskie (CHF), juany chińskie (CNY) i korony czeskie (CZK) na złote oraz złote na wybraną walutę. Program korzysta z ostatnich opublikowanych średnich kursów Narodowego Banku Polskiego i zawiera wysuwany kalkulator.
 
 Aplikacja działa w wersji portable, dlatego nie wymaga instalacji.
 
-![Aktualny wygląd Przelicznika walut na PLN 4.6.0](docs/images/gui-v4.6.png)
+![Aktualny wygląd Przelicznika walut na PLN 4.7.0](docs/images/gui-v4.7.png)
+
+## Nowości w wersji 4.7.0
+
+- pełne przełączanie interfejsu, kalkulatora i komunikatów między językiem polskim i angielskim,
+- osobne strony wsparcia dla wersji PL i EN,
+- ujednolicony układ przycisków **Przypnij**, **Wsparcie ♥** i **O mnie**,
+- formatowanie liczb dopasowane do wybranego języka.
 
 ## Najważniejsze możliwości
 
@@ -18,6 +25,7 @@ Aplikacja działa w wersji portable, dlatego nie wymaga instalacji.
 - szybkie przełączanie walut za pomocą selektora w trzech rzędach,
 - prezentowanie daty aktualności danych i informowanie o kursach z ostatniego dnia roboczego,
 - kopiowanie kwoty wraz z oznaczeniem waluty: **€, $, £, CHF, ¥, Kč lub zł**,
+- przełączanie całego interfejsu i komunikatów między językiem polskim i angielskim,
 - przypinanie okna nad pozostałymi aplikacjami,
 - praca bez instalacji.
 
@@ -73,4 +81,4 @@ Program nie stanowi porady finansowej i powinien być traktowany jako wygodne na
 
 ## Wsparcie
 
-Program jest udostępniany bezpłatnie i bez limitu czasu. Jeżeli doceniasz moją pracę, możesz dobrowolnie wesprzeć rozwój projektów przez przycisk **Wsparcie ♥** w lewym dolnym rogu aplikacji lub [postawić kawę](https://buycoffee.to/beniamin-tv6).
+Program jest udostępniany bezpłatnie i bez limitu czasu. W polskiej wersji przycisk **Wsparcie ♥** prowadzi do [BuyCoffee](https://buycoffee.to/beniamin-tv6), a w angielskiej do [Ko-fi](https://ko-fi.com/beniaminzak).

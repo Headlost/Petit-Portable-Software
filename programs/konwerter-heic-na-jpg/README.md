@@ -1,12 +1,18 @@
 # Konwerter HEIC na JPG
 
-**Wersja 2.0.0 · Windows · aplikacja portable**
+**Wersja 2.1.0 · Windows · aplikacja portable**
 
 Konwerter HEIC na JPG to proste narzędzie do szybkiej, zbiorczej konwersji zdjęć zapisanych w formacie HEIC do plików JPG. Program nie modyfikuje obrazów źródłowych i pozwala samodzielnie wskazać folder docelowy.
 
 Aplikacja działa w wersji portable, dlatego nie wymaga instalacji. Wystarczy uruchomić pobrany plik EXE.
 
-![Aktualny wygląd Konwertera HEIC na JPG 2.0.0](docs/images/gui-v2.png)
+![Aktualny wygląd Konwertera HEIC na JPG 2.1.0](docs/images/gui-v2.1.png)
+
+## Nowości w wersji 2.1.0
+
+- dodano przycisk **Przypnij: OFF/ON**, który utrzymuje okno nad innymi aplikacjami,
+- przycisk wsparcia otrzymał symbol serca,
+- ujednolicono dolny pasek przycisków zgodnie ze standardem Petit Portable Software.
 
 ## Najważniejsze możliwości
 
@@ -15,6 +21,7 @@ Aplikacja działa w wersji portable, dlatego nie wymaga instalacji. Wystarczy ur
 - domyślny zapis JPG obok pliku źródłowego, jeżeli nie wskazano innego miejsca,
 - natychmiastowe otwieranie folderu z wynikami,
 - zachowanie oryginalnych plików HEIC bez zmian,
+- przypinanie okna nad pozostałymi aplikacjami,
 - przełączanie całego interfejsu i komunikatów między językiem polskim i angielskim,
 - osobne polskie i angielskie strony wsparcia,
 - działanie lokalne bez połączenia z internetem,

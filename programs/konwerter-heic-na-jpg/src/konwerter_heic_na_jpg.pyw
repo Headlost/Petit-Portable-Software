@@ -11,7 +11,7 @@ from app_common import apply_window_icon, styled_messagebox as messagebox
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("green")
 
-APP_VERSION = "2.0.0"
+APP_VERSION = "2.1.0"
 APP_AUTHOR = "Beniamin Żak"
 SUPPORT_URLS = {
     "pl": "https://buycoffee.to/beniamin-tv6",
@@ -48,7 +48,8 @@ TRANSLATIONS = {
         "convert": "Wybierz pliki i konwertuj",
         "choose_output": "Wybierz folder zapisu",
         "open_output": "Otwórz folder zapisu",
-        "support": "Wsparcie",
+        "pin": "Przypnij",
+        "support": "Wsparcie  ♥",
         "about": "O mnie",
         "about_title": "O programie",
         "name": "Nazwa",
@@ -80,7 +81,8 @@ TRANSLATIONS = {
         "convert": "Select files and convert",
         "choose_output": "Choose output folder",
         "open_output": "Open output folder",
-        "support": "Support",
+        "pin": "Pin",
+        "support": "Support  ♥",
         "about": "About",
         "about_title": "About",
         "name": "Name",
@@ -107,6 +109,7 @@ TRANSLATIONS = {
 selected_output_directory = None
 last_output_directory = None
 current_language = "pl"
+is_topmost = False
 
 
 def tr(key):
@@ -196,6 +199,18 @@ def open_support_page():
     webbrowser.open(SUPPORT_URLS[current_language])
 
 
+def toggle_topmost():
+    global is_topmost
+
+    is_topmost = not is_topmost
+    root.attributes("-topmost", is_topmost)
+    topmost_button.configure(
+        text=f"{tr('pin')}: {'ON' if is_topmost else 'OFF'}",
+        fg_color=COLORS["selected"] if is_topmost else "transparent",
+        text_color=COLORS["text"],
+    )
+
+
 def choose_output_directory():
     global selected_output_directory
 
@@ -265,11 +280,11 @@ def convert_files():
     )
 
 def main():
-    global current_language
+    global current_language, root, topmost_button
 
     root = ctk.CTk()
     root.title(tr("window_title"))
-    root.geometry("560x500")
+    root.geometry("560x560")
     root.resizable(False, False)
     root.configure(fg_color=COLORS["background"])
     apply_window_icon(root)
@@ -379,10 +394,26 @@ def main():
 
     footer = ctk.CTkFrame(root, fg_color="transparent")
     footer.pack(fill="x", padx=30, pady=(0, 12))
+    footer_left = ctk.CTkFrame(footer, fg_color="transparent")
+    footer_left.pack(side="left")
+    topmost_button = ctk.CTkButton(
+        footer_left,
+        text=f"{tr('pin')}: OFF",
+        width=110,
+        height=29,
+        fg_color="transparent",
+        hover_color=COLORS["control_hover"],
+        border_width=1,
+        border_color=COLORS["border_bright"],
+        text_color=COLORS["text"],
+        command=toggle_topmost,
+    )
+    topmost_button.pack(pady=(0, 5))
     support_button = ctk.CTkButton(
-        footer,
+        footer_left,
         text=tr("support"),
         width=110,
+        height=29,
         fg_color="transparent",
         hover_color=COLORS["control_hover"],
         border_width=1,
@@ -390,11 +421,12 @@ def main():
         text_color=COLORS["text"],
         command=open_support_page,
     )
-    support_button.pack(side="left")
+    support_button.pack()
     about_button = ctk.CTkButton(
         footer,
         text=tr("about"),
         width=110,
+        height=29,
         fg_color="transparent",
         hover_color=COLORS["control_hover"],
         border_width=1,
@@ -402,7 +434,7 @@ def main():
         text_color=COLORS["text"],
         command=show_about,
     )
-    about_button.pack(side="right")
+    about_button.pack(side="right", anchor="s", pady=(34, 0))
 
     ctk.CTkLabel(root, text="© 2024 Beniamin Żak", text_color=COLORS["muted"],
                  font=ctk.CTkFont("Segoe UI", 11, slant="italic")).pack(pady=(0, 16))
@@ -419,6 +451,7 @@ def main():
         convert_button._output_tooltip.set_text(tr("tooltip"))
         choose_output_button.configure(text=tr("choose_output"))
         open_output_button.configure(text=tr("open_output"))
+        topmost_button.configure(text=f"{tr('pin')}: {'ON' if is_topmost else 'OFF'}")
         support_button.configure(text=tr("support"))
         about_button.configure(text=tr("about"))
 

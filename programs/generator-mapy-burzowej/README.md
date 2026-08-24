@@ -1,12 +1,19 @@
 # Generator Mapy Burzowej
 
-**Wersja 5.0.0 · Windows · aplikacja portable**
+**Wersja 5.1.0 · Windows · aplikacja portable**
 
 Generator Mapy Burzowej to praktyczne narzędzie umożliwiające szybkie przygotowanie mapy przedstawiającej aktywność burzową dla wybranej lokalizacji i określonego dnia. Program został stworzony z myślą o prostocie obsługi oraz zastosowaniach serwisowych, dokumentacyjnych, reklamacyjnych i biurowych.
 
 Aplikacja działa w wersji portable, dlatego nie wymaga instalacji. Wystarczy uruchomić pobrany plik EXE, aby rozpocząć korzystanie z programu.
 
-![Aktualny wygląd Generatora Mapy Burzowej](docs/images/gui-v5.png)
+![Aktualny wygląd Generatora Mapy Burzowej 5.1.0](docs/images/gui-v5.1.png)
+
+## Nowości w wersji 5.1.0
+
+- pełne przełączanie interfejsu i komunikatów między językiem polskim i angielskim,
+- osobne strony wsparcia dla wersji PL i EN,
+- ujednolicony układ przycisków **Przypnij**, **Wsparcie ♥** i **O mnie**,
+- odświeżony interfejs zgodny ze wspólnym standardem Petit Portable Software.
 
 ## Najważniejsze możliwości
 
@@ -16,6 +23,7 @@ Aplikacja działa w wersji portable, dlatego nie wymaga instalacji. Wystarczy ur
 - automatyczne aktualizowanie nazwy pliku wynikowego po zmianie lokalizacji lub daty,
 - natychmiastowe otwieranie folderu z zapisaną mapą,
 - przypinanie okna nad pozostałymi aplikacjami,
+- obsługa języków polskiego i angielskiego,
 - działanie bez instalacji.
 
 Do pobierania map i rozpoznawania lokalizacji wymagane jest połączenie z internetem. Program przyjmuje wyłącznie dni, dla których mapa jest już dostępna — najpóźniej dzień wczorajszy.
@@ -65,4 +73,4 @@ Gotowe pliki EXE będą publikowane w sekcji GitHub Releases. Wydania mogą zawi
 
 ## Wsparcie
 
-Program jest udostępniany bezpłatnie i bez limitu czasu. Jeżeli doceniasz moją pracę, możesz dobrowolnie wesprzeć rozwój projektów przez przycisk **Wsparcie** w lewym dolnym rogu aplikacji lub [postawić kawę](https://buycoffee.to/beniamin-tv6).
+Program jest udostępniany bezpłatnie i bez limitu czasu. W polskiej wersji przycisk **Wsparcie ♥** prowadzi do [BuyCoffee](https://buycoffee.to/beniamin-tv6), a w angielskiej do [Ko-fi](https://ko-fi.com/beniaminzak).

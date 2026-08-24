@@ -11,7 +11,8 @@ import re
 import os
 import sys
 import uuid  # do generowania unikalnego user_agent
-from app_common import apply_window_icon, open_support_page, resource_path, styled_messagebox as messagebox
+import webbrowser
+from app_common import apply_window_icon, resource_path, styled_messagebox as messagebox
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -30,9 +31,115 @@ COLOR_SECONDARY_HOVER = "#24344A"
 COLOR_SUCCESS = "#2F855A"
 
 APP_TITLE = "Oznaczanie lokalizacji na mapie burzowej"
-APP_VERSION = "5.0.0"
+APP_VERSION = "5.1.0"
 APP_AUTHOR = "Beniamin Żak"
 APP_DESCRIPTION = "Tworzy mapę burzową z oznaczeniem wybranej lokalizacji."
+
+SUPPORT_URLS = {
+    "pl": "https://buycoffee.to/beniamin-tv6",
+    "en": "https://ko-fi.com/beniaminzak",
+}
+
+TRANSLATIONS = {
+    "pl": {
+        "window_title": "Oznaczanie lokalizacji na mapie burzowej",
+        "title": "Mapa burzowa",
+        "description": "Tworzy mapę burzową z oznaczeniem wybranej lokalizacji.",
+        "postal": "Kod / współrzędne",
+        "place": "Miasto / adres",
+        "place_placeholder": "Miasto, ulica lub pełny adres",
+        "date": "Data",
+        "date_placeholder": "dd.mm.rrrr lub rrrr-mm-dd",
+        "output_file": "Plik wynikowy",
+        "output_placeholder": "Wybierz miejsce zapisu",
+        "choose_output": "Miejsce zapisu",
+        "preview": "Podgląd mapy pojawi się tutaj",
+        "pin": "Przypnij",
+        "support": "Wsparcie  ♥",
+        "create": "Utwórz mapę",
+        "open_folder": "Otwórz folder zapisu",
+        "about": "O mnie",
+        "about_title": "O programie",
+        "name": "Nazwa",
+        "version": "Wersja",
+        "author": "Autor",
+        "download_error": "Błąd przy pobieraniu mapy: {error}",
+        "invalid_image": "Otrzymano nieprawidłowy obraz.",
+        "date_unavailable_title": "Data jeszcze niedostępna",
+        "date_unavailable": "Mapa dla dzisiejszej lub przyszłej daty nie jest jeszcze dostępna.\n\nWybierz datę najpóźniej z dnia wczorajszego: {date}.",
+        "folder_title": "Folder zapisu",
+        "folder_first": "Najpierw wybierz miejsce zapisu lub utwórz mapę.",
+        "folder_open_error": "Nie można otworzyć folderu:\n{error}",
+        "missing_data": "Brak danych",
+        "location_date_required": "Podaj lokalizację (kod, miasto, adres lub współrzędne) oraz datę.",
+        "date_error": "Błąd daty",
+        "date_formats": "Obsługiwane są m.in. formaty dd.mm.rrrr, rrrr-mm-dd, dd/mm/rrrr i dd-mm-rrrr.",
+        "save_title": "Wybierz miejsce zapisu mapy",
+        "all_required": "Podaj lokalizację, datę oraz plik wynikowy.",
+        "pin_missing": "Brak pinezki",
+        "pin_file_missing": "Nie znaleziono pliku: {path}",
+        "date_format_error": "Błąd formatu daty",
+        "date_unrecognized": "Nie udało się rozpoznać podanej daty.",
+        "map_download_error": "Błąd pobierania mapy",
+        "geocoding_error": "Błąd geokodowania",
+        "location_not_found": "Nie znaleziono lokalizacji. Spróbuj podać kod pocztowy, miasto, pełny adres albo współrzędne.",
+        "save_error": "Błąd zapisu",
+        "success": "Sukces",
+        "saved_as": "Zapisano jako:\n{path}",
+    },
+    "en": {
+        "window_title": "Storm Map Location Marker",
+        "title": "Storm map",
+        "description": "Creates a storm map marking the selected location.",
+        "postal": "Postal code / coordinates",
+        "place": "City / address",
+        "place_placeholder": "City, street, or full address",
+        "date": "Date",
+        "date_placeholder": "dd.mm.yyyy or yyyy-mm-dd",
+        "output_file": "Output file",
+        "output_placeholder": "Choose an output location",
+        "choose_output": "Choose output",
+        "preview": "The map preview will appear here",
+        "pin": "Pin",
+        "support": "Support  ♥",
+        "create": "Create map",
+        "open_folder": "Open output folder",
+        "about": "About",
+        "about_title": "About",
+        "name": "Name",
+        "version": "Version",
+        "author": "Author",
+        "download_error": "Could not download the map: {error}",
+        "invalid_image": "The server returned an invalid image.",
+        "date_unavailable_title": "Date not available yet",
+        "date_unavailable": "The map for today or a future date is not available yet.\n\nChoose yesterday or an earlier date: {date}.",
+        "folder_title": "Output folder",
+        "folder_first": "Choose an output location or create a map first.",
+        "folder_open_error": "Could not open the folder:\n{error}",
+        "missing_data": "Missing information",
+        "location_date_required": "Enter a location (postal code, city, address, or coordinates) and a date.",
+        "date_error": "Date error",
+        "date_formats": "Supported formats include dd.mm.yyyy, yyyy-mm-dd, dd/mm/yyyy, and dd-mm-yyyy.",
+        "save_title": "Choose where to save the map",
+        "all_required": "Enter a location, date, and output file.",
+        "pin_missing": "Marker missing",
+        "pin_file_missing": "File not found: {path}",
+        "date_format_error": "Date format error",
+        "date_unrecognized": "The entered date could not be recognized.",
+        "map_download_error": "Map download error",
+        "geocoding_error": "Geocoding error",
+        "location_not_found": "Location not found. Try a postal code, city, full address, or coordinates.",
+        "save_error": "Save error",
+        "success": "Success",
+        "saved_as": "Saved as:\n{path}",
+    },
+}
+
+current_language = "pl"
+
+
+def tr(key):
+    return TRANSLATIONS[current_language][key]
 
 
 # --- Funkcje pomocnicze ---
@@ -49,9 +156,9 @@ def pobierz_mape(data_formatted):
         resp.raise_for_status()
         return Image.open(BytesIO(resp.content)).convert("RGBA")
     except requests.RequestException as e:
-        raise RuntimeError(f"Błąd przy pobieraniu mapy: {e}")
+        raise RuntimeError(tr("download_error").format(error=e))
     except UnidentifiedImageError:
-        raise RuntimeError("Otrzymano nieprawidłowy obraz.")
+        raise RuntimeError(tr("invalid_image"))
 
 
 def parse_date(value):
@@ -85,10 +192,8 @@ def parse_available_map_date(value):
 
 def show_date_not_available(error):
     messagebox.showwarning(
-        "Data jeszcze niedostępna",
-        "Mapa dla dzisiejszej lub przyszłej daty nie jest jeszcze dostępna.\n\n"
-        "Wybierz datę najpóźniej z dnia wczorajszego: "
-        f"{error.latest_available:%d.%m.%Y}.",
+        tr("date_unavailable_title"),
+        tr("date_unavailable").format(date=f"{error.latest_available:%d.%m.%Y}"),
     )
 
 
@@ -158,9 +263,14 @@ DEFAULT_PINEZKA = str(resource_path("pinezka.png"))
 
 def about():
     messagebox.showinfo(
-        "O programie",
-        f"Nazwa: {APP_TITLE}\nWersja: {APP_VERSION}\nAutor: {APP_AUTHOR}\n\n{APP_DESCRIPTION}",
+        tr("about_title"),
+        f"{tr('name')}: {tr('window_title')}\n{tr('version')}: {APP_VERSION}\n"
+        f"{tr('author')}: {APP_AUTHOR}\n\n{tr('description')}",
     )
+
+
+def open_support():
+    webbrowser.open(SUPPORT_URLS[current_language])
 
 
 last_saved_path = None
@@ -170,12 +280,12 @@ def open_output_folder():
     candidate = pole_zapis.get().strip() or last_saved_path
     folder = os.path.dirname(os.path.abspath(candidate)) if candidate else ""
     if not folder or not os.path.isdir(folder):
-        messagebox.showwarning("Brak folderu", "Najpierw wybierz miejsce zapisu lub utwórz mapę.")
+        messagebox.showwarning(tr("folder_title"), tr("folder_first"))
         return
     try:
         os.startfile(folder)
     except OSError as exc:
-        messagebox.showerror("Nie można otworzyć folderu", str(exc))
+        messagebox.showerror(tr("folder_title"), tr("folder_open_error").format(error=exc))
 
 topmost_enabled = False
 def toggle_topmost():
@@ -183,7 +293,7 @@ def toggle_topmost():
     topmost_enabled = not topmost_enabled
     root.attributes('-topmost', topmost_enabled)
     status = 'ON' if topmost_enabled else 'OFF'
-    btn_top.configure(text=f"Przypnij: {status}",
+    btn_top.configure(text=f"{tr('pin')}: {status}",
                       fg_color=COLOR_SUCCESS if topmost_enabled else "transparent")
 
 
@@ -234,7 +344,7 @@ def wybierz_miejsce_zapisu():
     data_input = pole_data.get().strip()
 
     if not (kod or miasto) or not data_input:
-        messagebox.showwarning("Brak danych", "Podaj lokalizację (kod, miasto, adres lub współrzędne) oraz datę.")
+        messagebox.showwarning(tr("missing_data"), tr("location_date_required"))
         return
 
     try:
@@ -244,10 +354,11 @@ def wybierz_miejsce_zapisu():
         show_date_not_available(error)
         return
     except ValueError:
-        messagebox.showerror("Błąd daty", "Obsługiwane są m.in. formaty dd.mm.rrrr, rrrr-mm-dd, dd/mm/rrrr i dd-mm-rrrr.")
+        messagebox.showerror(tr("date_error"), tr("date_formats"))
         return
 
     save_path = filedialog.asksaveasfilename(
+        title=tr("save_title"),
         defaultextension=".png",
         filetypes=[("PNG", "*.png"), ("JPEG", "*.jpg;*.jpeg")],
         initialfile=default_name
@@ -265,10 +376,10 @@ def wykonaj():
     save_path = pole_zapis.get().strip()
 
     if not (kod or miasto) or not data_input or not save_path:
-        messagebox.showwarning("Brak danych", "Podaj lokalizację, datę oraz plik wynikowy.")
+        messagebox.showwarning(tr("missing_data"), tr("all_required"))
         return
     if not os.path.exists(DEFAULT_PINEZKA):
-        messagebox.showwarning("Brak pinezki", f"Nie znaleziono pliku: {DEFAULT_PINEZKA}")
+        messagebox.showwarning(tr("pin_missing"), tr("pin_file_missing").format(path=DEFAULT_PINEZKA))
         return
 
     # Parsowanie daty
@@ -279,22 +390,22 @@ def wykonaj():
         show_date_not_available(error)
         return
     except ValueError:
-        messagebox.showerror("Błąd formatu daty", "Nie udało się rozpoznać podanej daty.")
+        messagebox.showerror(tr("date_format_error"), tr("date_unrecognized"))
         return
 
     # Pobranie mapy
     try:
         obraz_mapy = pobierz_mape(df)
     except RuntimeError as e:
-        messagebox.showerror("Błąd pobierania mapy", str(e))
+        messagebox.showerror(tr("map_download_error"), str(e))
         return
 
     # Geokodowanie
     location = find_location(kod, miasto)
     if not location:
         messagebox.showerror(
-            "Błąd geokodowania",
-            "Nie znaleziono lokalizacji. Spróbuj podać kod pocztowy, miasto, pełny adres albo współrzędne.",
+            tr("geocoding_error"),
+            tr("location_not_found"),
         )
         return
 
@@ -315,7 +426,7 @@ def wykonaj():
         last_saved_path = save_path
         btn_open_folder.configure(state="normal")
     except Exception as e:
-        messagebox.showerror("Błąd zapisu", str(e))
+        messagebox.showerror(tr("save_error"), str(e))
         return
 
     # Wyświetlenie
@@ -324,46 +435,73 @@ def wykonaj():
     obraz_tk = ctk.CTkImage(light_image=podglad, dark_image=podglad, size=podglad.size)
     etykieta_obraz.configure(image=obraz_tk, text="")
 
-    messagebox.showinfo("Sukces", f"Zapisano jako:\n{save_path}")
+    messagebox.showinfo(tr("success"), tr("saved_as").format(path=save_path))
 
 # --- Budowa GUI ---
 
 root = ctk.CTk()
-root.title("Oznaczanie lokalizacji na mapie burzowej")
+root.title(tr("window_title"))
 root.geometry("760x830")
 root.resizable(False, False)
 root.configure(fg_color=COLOR_BG)
 apply_window_icon(root)
 
+
+def change_language(selected_language):
+    global current_language
+
+    current_language = selected_language.lower()
+    root.title(tr("window_title"))
+    title_label.configure(text=tr("title"))
+    postal_label.configure(text=tr("postal"))
+    place_label.configure(text=tr("place"))
+    pole_miasto.configure(placeholder_text=tr("place_placeholder"))
+    date_label.configure(text=tr("date"))
+    pole_data.configure(placeholder_text=tr("date_placeholder"))
+    output_label.configure(text=tr("output_file"))
+    pole_zapis.configure(placeholder_text=tr("output_placeholder"))
+    btn_save.configure(text=tr("choose_output"))
+    if etykieta_obraz.cget("text"):
+        etykieta_obraz.configure(text=tr("preview"))
+    btn_top.configure(text=f"{tr('pin')}: {'ON' if topmost_enabled else 'OFF'}")
+    support_button.configure(text=tr("support"))
+    btn_wykonaj.configure(text=tr("create"))
+    btn_open_folder.configure(text=tr("open_folder"))
+    about_button.configure(text=tr("about"))
+
 root.grid_columnconfigure(0, weight=1)
 root.grid_rowconfigure(2, weight=1)
 
-ctk.CTkLabel(
+title_label = ctk.CTkLabel(
     root,
-    text="Mapa burzowa",
+    text=tr("title"),
     font=ctk.CTkFont("Segoe UI", 28, "bold"),
     text_color=COLOR_TEXT,
-).grid(
-    row=0, column=0, padx=28, pady=(24, 12), sticky="w")
+)
+title_label.grid(row=0, column=0, padx=28, pady=(24, 12), sticky="w")
 
 formularz = ctk.CTkFrame(root, corner_radius=18, fg_color=COLOR_CARD)
 formularz.grid(row=1, column=0, padx=28, pady=8, sticky="ew")
 formularz.grid_columnconfigure(1, weight=1)
 
-ctk.CTkLabel(formularz, text="Kod / współrzędne", text_color=COLOR_TEXT).grid(row=0, column=0, padx=18, pady=(18, 8), sticky="w")
+postal_label = ctk.CTkLabel(formularz, text=tr("postal"), text_color=COLOR_TEXT)
+postal_label.grid(row=0, column=0, padx=18, pady=(18, 8), sticky="w")
 pole_kod = ctk.CTkEntry(formularz, placeholder_text="00-000 lub 52.23, 21.01", fg_color=COLOR_ENTRY, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
 pole_kod.grid(row=0, column=1, padx=18, pady=(18, 8), sticky="ew")
-ctk.CTkLabel(formularz, text="Miasto / adres", text_color=COLOR_TEXT).grid(row=1, column=0, padx=18, pady=8, sticky="w")
-pole_miasto = ctk.CTkEntry(formularz, placeholder_text="Miasto, ulica lub pełny adres", fg_color=COLOR_ENTRY, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
+place_label = ctk.CTkLabel(formularz, text=tr("place"), text_color=COLOR_TEXT)
+place_label.grid(row=1, column=0, padx=18, pady=8, sticky="w")
+pole_miasto = ctk.CTkEntry(formularz, placeholder_text=tr("place_placeholder"), fg_color=COLOR_ENTRY, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
 pole_miasto.grid(row=1, column=1, padx=18, pady=8, sticky="ew")
-ctk.CTkLabel(formularz, text="Data", text_color=COLOR_TEXT).grid(row=2, column=0, padx=18, pady=8, sticky="w")
-pole_data = ctk.CTkEntry(formularz, placeholder_text="dd.mm.rrrr lub rrrr-mm-dd", fg_color=COLOR_ENTRY, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
+date_label = ctk.CTkLabel(formularz, text=tr("date"), text_color=COLOR_TEXT)
+date_label.grid(row=2, column=0, padx=18, pady=8, sticky="w")
+pole_data = ctk.CTkEntry(formularz, placeholder_text=tr("date_placeholder"), fg_color=COLOR_ENTRY, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
 pole_data.grid(row=2, column=1, padx=18, pady=8, sticky="ew")
-ctk.CTkLabel(formularz, text="Plik wynikowy", text_color=COLOR_TEXT).grid(row=3, column=0, padx=18, pady=(8, 18), sticky="w")
-pole_zapis = ctk.CTkEntry(formularz, placeholder_text="Wybierz miejsce zapisu", fg_color=COLOR_ENTRY, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
+output_label = ctk.CTkLabel(formularz, text=tr("output_file"), text_color=COLOR_TEXT)
+output_label.grid(row=3, column=0, padx=18, pady=(8, 18), sticky="w")
+pole_zapis = ctk.CTkEntry(formularz, placeholder_text=tr("output_placeholder"), fg_color=COLOR_ENTRY, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
 pole_zapis.grid(row=3, column=1, padx=(18, 8), pady=(8, 18), sticky="ew")
 btn_save = ctk.CTkButton(
-    formularz, text="Miejsce zapisu", width=116, height=28,
+    formularz, text=tr("choose_output"), width=116, height=28,
     fg_color=COLOR_ACCENT, hover_color=COLOR_ACCENT_HOVER,
     text_color=COLOR_ACCENT_TEXT, command=wybierz_miejsce_zapisu,
 )
@@ -379,7 +517,7 @@ podglad_frame = ctk.CTkFrame(root, corner_radius=18, fg_color=COLOR_CARD)
 podglad_frame.grid(row=2, column=0, padx=28, pady=12, sticky="nsew")
 podglad_frame.grid_columnconfigure(0, weight=1)
 podglad_frame.grid_rowconfigure(0, weight=1)
-etykieta_obraz = ctk.CTkLabel(podglad_frame, text="Podgląd mapy pojawi się tutaj", text_color=COLOR_MUTED)
+etykieta_obraz = ctk.CTkLabel(podglad_frame, text=tr("preview"), text_color=COLOR_MUTED)
 etykieta_obraz.grid(row=0, column=0, padx=18, pady=18)
 
 akcje = ctk.CTkFrame(root, fg_color="transparent")
@@ -397,32 +535,53 @@ secondary_button = {
 }
 
 btn_top = ctk.CTkButton(
-    akcje, text="Przypnij: OFF", width=96,
+    akcje, text=f"{tr('pin')}: OFF", width=110,
     command=toggle_topmost, **secondary_button,
 )
 btn_top.grid(row=0, column=0, pady=(0, 7), sticky="w")
 
-ctk.CTkButton(
-    akcje, text="Wsparcie", width=96,
-    command=open_support_page, **secondary_button,
-).grid(row=1, column=0, sticky="w")
+support_button = ctk.CTkButton(
+    akcje, text=tr("support"), width=110,
+    command=open_support, **secondary_button,
+)
+support_button.grid(row=1, column=0, sticky="w")
 
 btn_wykonaj = ctk.CTkButton(
-    akcje, text="Utwórz mapę", width=146, height=30,
+    akcje, text=tr("create"), width=170, height=30,
     fg_color=COLOR_ACCENT, hover_color=COLOR_ACCENT_HOVER,
     text_color=COLOR_ACCENT_TEXT, command=wykonaj,
 )
 btn_wykonaj.grid(row=0, column=1, pady=(0, 7))
 
 btn_open_folder = ctk.CTkButton(
-    akcje, text="Otwórz folder", width=126, state="disabled",
+    akcje, text=tr("open_folder"), width=170,
     command=open_output_folder, **secondary_button,
 )
 btn_open_folder.grid(row=1, column=1)
 
-ctk.CTkButton(
-    akcje, text="O mnie", width=86,
+about_button = ctk.CTkButton(
+    akcje, text=tr("about"), width=110,
     command=about, **secondary_button,
-).grid(row=1, column=2, sticky="e")
+)
+about_button.grid(row=1, column=2, sticky="e")
+
+language_selector = ctk.CTkSegmentedButton(
+    root,
+    values=["PL", "EN"],
+    width=76,
+    height=28,
+    corner_radius=8,
+    border_width=1,
+    fg_color=COLOR_ENTRY,
+    selected_color=COLOR_ACCENT,
+    selected_hover_color=COLOR_ACCENT_HOVER,
+    unselected_color=COLOR_ENTRY,
+    unselected_hover_color=COLOR_SECONDARY_HOVER,
+    text_color=COLOR_TEXT,
+    font=ctk.CTkFont("Segoe UI", 10, "bold"),
+    command=change_language,
+)
+language_selector.place(relx=1.0, x=-28, y=28, anchor="ne")
+language_selector.set("PL")
 
 root.mainloop()

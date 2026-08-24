@@ -4,9 +4,11 @@ import requests
 import ast
 import datetime
 import os
+import re
 import sys
 import threading
-from app_common import apply_window_icon, open_support_page, styled_messagebox as messagebox
+import webbrowser
+from app_common import apply_window_icon, styled_messagebox as messagebox
 
 ctk.set_appearance_mode("dark")
 
@@ -23,12 +25,127 @@ COLOR_TEXT = "#F4F1E8"
 COLOR_MUTED = "#98A6BA"
 
 APP_TITLE = "Przelicznik walut → PLN"
-APP_VERSION = "4.6.0"
+APP_VERSION = "4.7.0"
 APP_AUTHOR = "Beniamin Żak"
 APP_DESCRIPTION = (
     "Przelicza EUR, USD, GBP, CHF, CNY i CZK na PLN według średnich "
     "kursów NBP i zawiera podręczny kalkulator."
 )
+
+SUPPORT_URLS = {
+    "pl": "https://buycoffee.to/beniamin-tv6",
+    "en": "https://ko-fi.com/beniaminzak",
+}
+
+TRANSLATIONS = {
+    "pl": {
+        "window_title": "Przelicznik walut → PLN",
+        "title": "Przelicznik walut → PLN",
+        "subtitle": "Aktualne średnie kursy Narodowego Banku Polskiego",
+        "description": "Przelicza EUR, USD, GBP, CHF, CNY i CZK na PLN według średnich kursów NBP i zawiera podręczny kalkulator.",
+        "no_data": "brak danych",
+        "loading": "pobieranie...",
+        "fresh_data": "Najświeższe dane z NBP",
+        "older_data": "Dane NBP z {date}. Kolejna aktualizacja w najbliższy dzień roboczy.",
+        "future_data": "Data danych NBP jest późniejsza niż data systemowa",
+        "fallback_data": "Brak aktualnych danych z NBP — użyto kursu awaryjnego",
+        "error": "Błąd",
+        "invalid_pln": "Wprowadź poprawną kwotę w zł.",
+        "invalid_currency": "Wprowadź poprawną kwotę w {symbol}.",
+        "history_empty": "Brak zapisanych wyników",
+        "history_copied": "Skopiowano wynik historyczny",
+        "division_zero": "Nie można dzielić przez zero",
+        "incomplete": "Niepełne działanie",
+        "final_copied": "Skopiowano finalny wynik",
+        "about": "O mnie",
+        "about_title": "O mnie",
+        "name": "Nazwa",
+        "version": "Wersja",
+        "author": "Autor",
+        "rate": "Aktualny kurs: {rate} PLN za 1 {code}",
+        "update": "Aktualizacja: {date}",
+        "amount_pln": "Kwota w zł",
+        "amount_foreign": "Kwota w {symbol}",
+        "convert_to": "Przelicz na {symbol}",
+        "convert_pln": "Przelicz na zł",
+        "fetch_error": "Nie udało się pobrać aktualnego kursu {code}: {error}.\nUżyto kursu awaryjnego: {rate} PLN za 1 {code}",
+        "show_calculator": "Wysuń kalkulator",
+        "hide_calculator": "Wsuń kalkulator",
+        "loading_rate": "Pobieranie aktualnego kursu...",
+        "amount_tooltip": "Kwota automatycznie zaokrąglona do 2 miejsc po przecinku",
+        "copy": "Kopiuj",
+        "calculator": "Kalkulator",
+        "history": "Historia wyników",
+        "copy_currency": "Kopiuj wynik z walutą",
+        "pin": "Przypnij",
+        "support": "Wsparcie  ♥",
+    },
+    "en": {
+        "window_title": "Currency Converter → PLN",
+        "title": "Currency Converter → PLN",
+        "subtitle": "Current average exchange rates from the National Bank of Poland",
+        "description": "Converts EUR, USD, GBP, CHF, CNY, and CZK to PLN using average NBP rates and includes a handy calculator.",
+        "no_data": "no data",
+        "loading": "loading...",
+        "fresh_data": "Latest data from NBP",
+        "older_data": "NBP data from {date}. The next update is expected on the next business day.",
+        "future_data": "The NBP data date is later than the system date",
+        "fallback_data": "Current NBP data unavailable — a fallback rate is being used",
+        "error": "Error",
+        "invalid_pln": "Enter a valid amount in PLN.",
+        "invalid_currency": "Enter a valid amount in {symbol}.",
+        "history_empty": "No saved results",
+        "history_copied": "Historical result copied",
+        "division_zero": "Cannot divide by zero",
+        "incomplete": "Incomplete calculation",
+        "final_copied": "Final result copied",
+        "about": "About",
+        "about_title": "About",
+        "name": "Name",
+        "version": "Version",
+        "author": "Author",
+        "rate": "Current rate: {rate} PLN for 1 {code}",
+        "update": "Updated: {date}",
+        "amount_pln": "Amount in PLN",
+        "amount_foreign": "Amount in {symbol}",
+        "convert_to": "Convert to {symbol}",
+        "convert_pln": "Convert to PLN",
+        "fetch_error": "Could not download the current {code} rate: {error}.\nFallback rate used: {rate} PLN for 1 {code}",
+        "show_calculator": "Show calculator",
+        "hide_calculator": "Hide calculator",
+        "loading_rate": "Downloading the current rate...",
+        "amount_tooltip": "The amount is automatically rounded to 2 decimal places",
+        "copy": "Copy",
+        "calculator": "Calculator",
+        "history": "Result history",
+        "copy_currency": "Copy result with currency",
+        "pin": "Pin",
+        "support": "Support  ♥",
+    },
+}
+
+CURRENCY_NAMES = {
+    "pl": {
+        "EUR": "Euro", "USD": "Dolar amerykański", "GBP": "Funt brytyjski",
+        "CHF": "Frank szwajcarski", "CNY": "Juan chiński", "CZK": "Korona czeska",
+    },
+    "en": {
+        "EUR": "Euro", "USD": "US dollar", "GBP": "British pound",
+        "CHF": "Swiss franc", "CNY": "Chinese yuan", "CZK": "Czech koruna",
+    },
+}
+
+current_language = "pl"
+
+
+def tr(key, **values):
+    text = TRANSLATIONS[current_language][key]
+    return text.format(**values) if values else text
+
+
+def localized_number(value, digits=2):
+    text = f"{value:.{digits}f}"
+    return text.replace(".", ",") if current_language == "pl" else text
 
 WALUTY = {
     "EUR": {"nazwa": "Euro", "symbol": "€", "kurs_awaryjny": 4.50},
@@ -67,7 +184,7 @@ def pobierz_sredni_kurs(waluta):
         data_aktualizacji = effective_date + " " + current_time
         return kurs, data_aktualizacji, None
     except Exception as e:
-        return WALUTY[waluta]["kurs_awaryjny"], "brak danych", str(e)
+        return WALUTY[waluta]["kurs_awaryjny"], tr("no_data"), str(e)
 
 
 def tekst_statusu_danych(data_kursu_z_czasem, dzis=None):
@@ -76,15 +193,12 @@ def tekst_statusu_danych(data_kursu_z_czasem, dzis=None):
         data_kursu = datetime.date.fromisoformat(data_kursu_z_czasem.split()[0])
         dzis = dzis or datetime.date.today()
         if data_kursu == dzis:
-            return "Najświeższe dane z NBP"
+            return tr("fresh_data")
         if data_kursu < dzis:
-            return (
-                f"Dane NBP z {data_kursu.strftime('%d.%m.%Y')}. "
-                "Kolejna aktualizacja w najbliższy dzień roboczy."
-            )
-        return "Data danych NBP jest późniejsza niż data systemowa"
+            return tr("older_data", date=data_kursu.strftime('%d.%m.%Y'))
+        return tr("future_data")
     except (ValueError, IndexError):
-        return "Brak aktualnych danych z NBP — użyto kursu awaryjnego"
+        return tr("fallback_data")
 
 # Przeliczanie walut
 def przelicz_na_walute(event=None):
@@ -93,10 +207,10 @@ def przelicz_na_walute(event=None):
         pln = float(entry_pln.get().replace(",", "."))
         wynik = pln / aktualny_kurs
         label_waluta_result.configure(
-            text=f"{wynik:.2f}".replace(".", ",") + f" {symbol_waluty[aktualna_waluta]}"
+            text=localized_number(wynik) + f" {symbol_waluty[aktualna_waluta]}"
         )
     except ValueError:
-        messagebox.showerror("Błąd", "Wprowadź poprawną kwotę w zł.")
+        messagebox.showerror(tr("error"), tr("invalid_pln"))
 
 def przelicz_na_pln(event=None):
     global aktualny_kurs, aktualna_waluta
@@ -104,16 +218,18 @@ def przelicz_na_pln(event=None):
         kwota = float(entry_waluta.get().replace(",", "."))
         wynik = kwota * aktualny_kurs
         label_pln_result.configure(
-            text=f"{wynik:.2f}".replace(".", ",") + " zł"
+            text=localized_number(wynik) + (" zł" if current_language == "pl" else " PLN")
         )
     except ValueError:
-        messagebox.showerror("Błąd", f"Wprowadź poprawną kwotę w {symbol_waluty[aktualna_waluta]}.")
+        messagebox.showerror(
+            tr("error"), tr("invalid_currency", symbol=symbol_waluty[aktualna_waluta])
+        )
 
 def skopiuj_wynik(label):
     wynik = label.cget("text").strip()
     if wynik and wynik != "—":
-        if wynik.endswith(" zł"):
-            numeric_value = wynik[:-3].strip()
+        if wynik.endswith((" zł", " PLN")):
+            numeric_value = wynik.rsplit(" ", 1)[0].strip()
             root.clipboard_clear()
             root.clipboard_append(numeric_value)
         else:
@@ -161,7 +277,9 @@ def odswiez_wyswietlacz_kalkulatora(text=None):
     if text is None:
         text = calculator_expression or "0"
         text = text.replace("*", " × ").replace("/", " ÷ ").replace("+", " + ")
-        text = text.replace("-", " − ").replace(".", ",")
+        text = text.replace("-", " − ")
+        if current_language == "pl":
+            text = text.replace(".", ",")
         text = " ".join(text.split())
         if len(text) > 24:
             text = "…" + text[-23:]
@@ -169,14 +287,16 @@ def odswiez_wyswietlacz_kalkulatora(text=None):
 
 
 def symbol_waluty_z_tekstu(text):
-    for symbol in ("zł", *sorted(set(symbol_waluty.values()), key=len, reverse=True)):
+    for symbol in ("zł", "PLN", *sorted(set(symbol_waluty.values()), key=len, reverse=True)):
         if symbol in text:
             return symbol
     return ""
 
 
 def formatuj_wynik_z_waluta(value, currency=""):
-    number = formatuj_liczbe_kalkulatora(float(value)).replace(".", ",")
+    number = formatuj_liczbe_kalkulatora(float(value))
+    if current_language == "pl":
+        number = number.replace(".", ",")
     return f"{number} {currency}".strip()
 
 
@@ -187,7 +307,7 @@ def odswiez_historie_kalkulatora():
     if not calculator_history:
         ctk.CTkLabel(
             calculator_history_frame,
-            text="Brak zapisanych wyników",
+            text=tr("history_empty"),
             text_color=COLOR_MUTED,
         ).pack(pady=18)
         return
@@ -230,7 +350,7 @@ def skopiuj_wynik_historyczny(result):
     root.clipboard_clear()
     root.clipboard_append(result)
     toggle_historii_kalkulatora(force_close=True)
-    pokaz_monit_kalkulatora("Skopiowano wynik historyczny")
+    pokaz_monit_kalkulatora(tr("history_copied"))
 
 
 def animuj_historie_kalkulatora(opening, step=0, steps=16):
@@ -332,10 +452,10 @@ def nacisnij_kalkulator(value):
         except ZeroDivisionError:
             calculator_expression = ""
             calculator_just_evaluated = False
-            odswiez_wyswietlacz_kalkulatora("Nie można dzielić przez zero")
+            odswiez_wyswietlacz_kalkulatora(tr("division_zero"))
             return
         except (ValueError, SyntaxError, TypeError):
-            odswiez_wyswietlacz_kalkulatora("Niepełne działanie")
+            odswiez_wyswietlacz_kalkulatora(tr("incomplete"))
             return
     elif value in "+-*/":
         if calculator_expression and calculator_expression[-1] in "+-*/":
@@ -394,7 +514,7 @@ def kopiuj_z_kalkulatora():
                 float(oblicz_wyrazenie(calculator_expression))
             )
         except (ValueError, SyntaxError, ZeroDivisionError, TypeError):
-            odswiez_wyswietlacz_kalkulatora("Niepełne działanie")
+            odswiez_wyswietlacz_kalkulatora(tr("incomplete"))
             return
         calculator_expression = result
         calculator_just_evaluated = True
@@ -405,7 +525,7 @@ def kopiuj_z_kalkulatora():
         copied_result = formatuj_wynik_z_waluta(result, calculator_currency)
         root.clipboard_clear()
         root.clipboard_append(copied_result)
-        pokaz_monit_kalkulatora("Skopiowano finalny wynik")
+        pokaz_monit_kalkulatora(tr("final_copied"))
 
 
 def obsluz_klawiature_kalkulatora(event):
@@ -435,9 +555,14 @@ def obsluz_klawiature_kalkulatora(event):
 # Informacje
 def pokaz_informacje_o_autorze():
     messagebox.showinfo(
-        "O mnie",
-        f"Nazwa: {APP_TITLE}\nWersja: {APP_VERSION}\nAutor: {APP_AUTHOR}\n\n{APP_DESCRIPTION}",
+        tr("about_title"),
+        f"{tr('name')}: {tr('window_title')}\n{tr('version')}: {APP_VERSION}\n"
+        f"{tr('author')}: {APP_AUTHOR}\n\n{tr('description')}",
     )
+
+
+def open_support():
+    webbrowser.open(SUPPORT_URLS[current_language])
 
 # Ustawienie waluty i kursu
 SPINNER_FRAMES = ("◐", "◓", "◑", "◒")
@@ -489,13 +614,15 @@ def zastosuj_nowy_kurs(waluta, kurs, data, blad):
     aktualny_kurs = kurs
     data_aktualizacji = data
     label_header.configure(
-        text=(f"Aktualny kurs: {aktualny_kurs:.4f}".replace(".", ",") + f" PLN za 1 {waluta}")
+        text=tr("rate", rate=localized_number(aktualny_kurs, 4), code=waluta)
     )
-    label_update.configure(text=f"Aktualizacja: {data_aktualizacji}")
-    label_pln.configure(text="Kwota w zł")
-    label_waluta.configure(text=f"Kwota w {symbol_waluty[waluta]}")
-    button_pln.configure(text=f"Przelicz na {symbol_waluty[waluta]}")
-    button_waluta.configure(text="Przelicz na zł")
+    label_update.configure(text=tr("update", date=data_aktualizacji))
+    label_pln.configure(text=tr("amount_pln"))
+    label_waluta.configure(text=tr("amount_foreign", symbol=symbol_waluty[waluta]))
+    button_pln.configure(text=tr("convert_to", symbol=symbol_waluty[waluta]))
+    button_waluta.configure(text=tr("convert_pln"))
+    entry_pln.configure(placeholder_text="0,00" if current_language == "pl" else "0.00")
+    entry_waluta.configure(placeholder_text="0,00" if current_language == "pl" else "0.00")
     label_waluta_result.configure(text="—")
     label_pln_result.configure(text="—")
     entry_pln.delete(0, tk.END)
@@ -503,9 +630,13 @@ def zastosuj_nowy_kurs(waluta, kurs, data, blad):
     zakoncz_ladowanie()
     if blad:
         messagebox.showwarning(
-            "Błąd",
-            f"Nie udało się pobrać aktualnego kursu {waluta}: {blad}.\n"
-            f"Użyto kursu awaryjnego: {kurs:.4f} PLN za 1 {waluta}".replace(".", ","),
+            tr("error"),
+            tr(
+                "fetch_error",
+                code=waluta,
+                error=blad,
+                rate=localized_number(kurs, 4),
+            ),
         )
 
 def ustaw_walute(waluta):
@@ -521,7 +652,7 @@ def ustaw_walute(waluta):
 
 # --- GUI ---
 root = ctk.CTk()
-root.title(APP_TITLE)
+root.title(tr("window_title"))
 root.geometry("620x776")
 root.resizable(False, False)
 root.configure(fg_color=COLOR_WINDOW)
@@ -539,7 +670,7 @@ def toggle_topmost():
     is_topmost = not is_topmost
     root.attributes('-topmost', is_topmost)
     top_btn.configure(
-        text=f"Przypnij: {'ON' if is_topmost else 'OFF'}",
+        text=f"{tr('pin')}: {'ON' if is_topmost else 'OFF'}",
         fg_color=COLOR_ACCENT if is_topmost else COLOR_INPUT,
         hover_color=COLOR_ACCENT_HOVER if is_topmost else COLOR_CARD_HOVER,
         text_color=COLOR_ACCENT_TEXT if is_topmost else COLOR_TEXT,
@@ -588,7 +719,7 @@ def animuj_szerokosc_okna(start_width, end_width, start_x, end_x, step=0, steps=
     calculator_animating = False
     calculator_open = end_width == EXPANDED_WIDTH
     calculator_toggle_btn.configure(
-        text="Wsuń kalkulator" if calculator_open else "Wysuń kalkulator"
+        text=tr("hide_calculator") if calculator_open else tr("show_calculator")
     )
     if calculator_open:
         calculator_toggle_arrow.configure(text="←")
@@ -630,18 +761,19 @@ def toggle_calculator():
 # Ustawienia początkowe waluty
 aktualna_waluta = "EUR"
 aktualny_kurs = 0.0
-data_aktualizacji = "pobieranie..."
+data_aktualizacji = tr("loading")
 
-ctk.CTkLabel(main_content, text="Przelicznik walut → PLN",
-             text_color=COLOR_TEXT,
-             font=ctk.CTkFont("Segoe UI", 28, "bold")).pack(
-                 anchor="w", padx=30, pady=(26, 8))
-ctk.CTkLabel(main_content, text="Aktualne średnie kursy Narodowego Banku Polskiego",
-             text_color=COLOR_MUTED).pack(anchor="w", padx=30, pady=(0, 16))
+main_title_label = ctk.CTkLabel(
+    main_content, text=tr("title"), text_color=COLOR_TEXT,
+    font=ctk.CTkFont("Segoe UI", 28, "bold"),
+)
+main_title_label.pack(anchor="w", padx=30, pady=(26, 8))
+subtitle_label = ctk.CTkLabel(main_content, text=tr("subtitle"), text_color=COLOR_MUTED)
+subtitle_label.pack(anchor="w", padx=30, pady=(0, 16))
 
 calculator_toggle_btn = ctk.CTkButton(
     main_content,
-    text="Wysuń kalkulator",
+    text=tr("show_calculator"),
     width=132,
     height=28,
     fg_color=COLOR_INPUT,
@@ -680,7 +812,7 @@ for row, codes in enumerate(uklad_walut):
         dane = WALUTY[kod]
         button = ctk.CTkButton(
             currency_selector,
-            text=f"{kod} · {dane['nazwa']}",
+            text=f"{kod} · {CURRENCY_NAMES[current_language][kod]}",
             height=28,
             corner_radius=6,
             fg_color=COLOR_INPUT,
@@ -704,11 +836,11 @@ rate_card = ctk.CTkFrame(main_content, corner_radius=18, fg_color=COLOR_CARD)
 rate_card.pack(fill="x", padx=30, pady=(0, 16))
 label_header = ctk.CTkLabel(
     rate_card,
-    text="Pobieranie aktualnego kursu...",
+    text=tr("loading_rate"),
     text_color=COLOR_TEXT,
     font=ctk.CTkFont("Segoe UI", 18, "bold"))
 label_header.pack(pady=(18, 4))
-label_update = ctk.CTkLabel(rate_card, text=f"Aktualizacja: {data_aktualizacji}", text_color=COLOR_MUTED)
+label_update = ctk.CTkLabel(rate_card, text=tr("update", date=data_aktualizacji), text_color=COLOR_MUTED)
 label_update.pack(pady=(0, 18))
 loading_label = ctk.CTkLabel(
     rate_card,
@@ -759,7 +891,7 @@ def pokaz_dymek_kwoty(label):
     amount_tooltip.attributes("-topmost", True)
     tooltip_label = tk.Label(
         amount_tooltip,
-        text="Kwota automatycznie zaokrąglona do 2 miejsc po przecinku",
+        text=tr("amount_tooltip"),
         bg=COLOR_INPUT,
         fg=COLOR_TEXT,
         relief="solid",
@@ -788,7 +920,7 @@ frame_pln = ctk.CTkFrame(main_content, corner_radius=18, fg_color=COLOR_CARD)
 frame_pln.pack(fill="x", padx=30, pady=8)
 frame_pln.grid_columnconfigure(0, weight=1)
 label_pln = ctk.CTkLabel(
-    frame_pln, text="Kwota w zł", font=ctk.CTkFont("Segoe UI", 15, "bold"),
+    frame_pln, text=tr("amount_pln"), font=ctk.CTkFont("Segoe UI", 15, "bold"),
 )
 label_pln.grid(row=0, column=0, columnspan=2, padx=20, pady=(16, 6), sticky="w")
 entry_pln = ctk.CTkEntry(
@@ -798,7 +930,7 @@ entry_pln = ctk.CTkEntry(
 )
 entry_pln.grid(row=1, column=0, padx=(20, 8), pady=6, sticky="ew")
 entry_pln.bind("<Return>", przelicz_na_walute)
-button_pln = ctk.CTkButton(frame_pln, text=f"Przelicz na {symbol_waluty[aktualna_waluta]}",
+button_pln = ctk.CTkButton(frame_pln, text=tr("convert_to", symbol=symbol_waluty[aktualna_waluta]),
                            height=40, fg_color=COLOR_ACCENT, hover_color=COLOR_ACCENT_HOVER,
                            text_color=COLOR_ACCENT_TEXT, command=przelicz_na_walute)
 button_pln.grid(row=1, column=1, padx=(0, 20), pady=6)
@@ -807,7 +939,7 @@ label_waluta_result.grid(row=2, column=0, padx=20, pady=(10, 18), sticky="w")
 label_waluta_result.bind("<Enter>", lambda event: pokaz_dymek_kwoty(label_waluta_result))
 label_waluta_result.bind("<Leave>", ukryj_dymek_kwoty)
 copy_button_pln = ctk.CTkButton(
-    frame_pln, text="Kopiuj", width=90, fg_color=COLOR_INPUT,
+    frame_pln, text=tr("copy"), width=90, fg_color=COLOR_INPUT,
     hover_color=COLOR_CARD_HOVER, border_color=COLOR_BORDER, border_width=1,
     command=lambda: skopiuj_wynik(label_waluta_result),
 )
@@ -824,7 +956,7 @@ frame_waluta.pack(fill="x", padx=30, pady=8)
 frame_waluta.grid_columnconfigure(0, weight=1)
 label_waluta = ctk.CTkLabel(
     frame_waluta,
-    text=f"Kwota w {symbol_waluty[aktualna_waluta]}",
+    text=tr("amount_foreign", symbol=symbol_waluty[aktualna_waluta]),
     font=ctk.CTkFont("Segoe UI", 15, "bold"),
 )
 label_waluta.grid(row=0, column=0, columnspan=2, padx=20, pady=(16, 6), sticky="w")
@@ -836,7 +968,7 @@ entry_waluta = ctk.CTkEntry(
 entry_waluta.grid(row=1, column=0, padx=(20, 8), pady=6, sticky="ew")
 entry_waluta.bind("<Return>", przelicz_na_pln)
 button_waluta = ctk.CTkButton(
-    frame_waluta, text="Przelicz na zł", height=40, fg_color=COLOR_ACCENT,
+    frame_waluta, text=tr("convert_pln"), height=40, fg_color=COLOR_ACCENT,
     hover_color=COLOR_ACCENT_HOVER, text_color=COLOR_ACCENT_TEXT, command=przelicz_na_pln,
 )
 button_waluta.grid(row=1, column=1, padx=(0, 20), pady=6)
@@ -845,7 +977,7 @@ label_pln_result.grid(row=2, column=0, padx=20, pady=(10, 18), sticky="w")
 label_pln_result.bind("<Enter>", lambda event: pokaz_dymek_kwoty(label_pln_result))
 label_pln_result.bind("<Leave>", ukryj_dymek_kwoty)
 copy_button_waluta = ctk.CTkButton(
-    frame_waluta, text="Kopiuj", width=90, fg_color=COLOR_INPUT,
+    frame_waluta, text=tr("copy"), width=90, fg_color=COLOR_INPUT,
     hover_color=COLOR_CARD_HOVER, border_color=COLOR_BORDER, border_width=1,
     command=lambda: skopiuj_wynik(label_pln_result),
 )
@@ -880,7 +1012,7 @@ calculator_content.pack_propagate(False)
 
 calculator_title = ctk.CTkLabel(
     calculator_panel,
-    text="Kalkulator",
+    text=tr("calculator"),
     text_color=COLOR_TEXT,
     font=ctk.CTkFont("Segoe UI", 18, "bold"),
 )
@@ -891,7 +1023,7 @@ calculator_title.bind(
 
 calculator_history_info = ctk.CTkLabel(
     calculator_panel,
-    text="Historia wyników",
+    text=tr("history"),
     text_color=COLOR_MUTED,
     font=ctk.CTkFont("Segoe UI", 12, "bold"),
 )
@@ -966,9 +1098,9 @@ for row, keys in enumerate(calculator_keys):
             command=lambda key=value: nacisnij_kalkulator(key),
         ).grid(row=row, column=column, padx=3, pady=3, sticky="ew")
 
-ctk.CTkButton(
+calculator_copy_button = ctk.CTkButton(
     calculator_content,
-    text="Kopiuj wynik z walutą",
+    text=tr("copy_currency"),
     width=238,
     height=32,
     fg_color=COLOR_INPUT,
@@ -977,7 +1109,8 @@ ctk.CTkButton(
     border_width=1,
     text_color=COLOR_TEXT,
     command=kopiuj_z_kalkulatora,
-).pack(padx=16, pady=(10, 0))
+)
+calculator_copy_button.pack(padx=16, pady=(10, 0))
 
 odswiez_wyswietlacz_kalkulatora()
 odswiez_historie_kalkulatora()
@@ -998,16 +1131,95 @@ footer_button_style = {
 }
 
 top_btn = ctk.CTkButton(
-    footer, text="Przypnij: OFF", command=toggle_topmost, **footer_button_style,
+    footer, text=f"{tr('pin')}: OFF", command=toggle_topmost, **footer_button_style,
 )
 top_btn.grid(row=0, column=0, pady=(0, 6), sticky="w")
-ctk.CTkButton(
-    footer, text="Wsparcie  ♥", command=open_support_page, **footer_button_style,
-).grid(row=1, column=0, sticky="w")
+support_button = ctk.CTkButton(
+    footer, text=tr("support"), command=open_support, **footer_button_style,
+)
+support_button.grid(row=1, column=0, sticky="w")
 about_btn = ctk.CTkButton(
-    root, text="O mnie", command=pokaz_informacje_o_autorze, **footer_button_style,
+    root, text=tr("about"), command=pokaz_informacje_o_autorze, **footer_button_style,
 )
 about_btn.place(x=ABOUT_COLLAPSED_X, y=ABOUT_Y)
+
+
+def reformat_result_label(label, suffix):
+    text = label.cget("text").strip()
+    if not text or text == "—":
+        return
+    match = re.search(r"[-+]?\d+(?:[.,]\d+)?", text)
+    if not match:
+        return
+    value = float(match.group(0).replace(",", "."))
+    label.configure(text=f"{localized_number(value)} {suffix}")
+
+
+def change_language(selected_language):
+    global current_language
+
+    current_language = selected_language.lower()
+    root.title(tr("window_title"))
+    main_title_label.configure(text=tr("title"))
+    subtitle_label.configure(text=tr("subtitle"))
+    calculator_toggle_btn.configure(
+        text=tr("hide_calculator") if calculator_open else tr("show_calculator")
+    )
+    for code, button in currency_buttons.items():
+        button.configure(text=f"{code} · {CURRENCY_NAMES[current_language][code]}")
+
+    if aktualny_kurs > 0 and not loading_active:
+        label_header.configure(
+            text=tr("rate", rate=localized_number(aktualny_kurs, 4), code=aktualna_waluta)
+        )
+    else:
+        label_header.configure(text=tr("loading_rate"))
+
+    no_data_values = {TRANSLATIONS[language]["no_data"] for language in TRANSLATIONS}
+    displayed_date = tr("no_data") if data_aktualizacji in no_data_values else data_aktualizacji
+    if aktualny_kurs == 0:
+        displayed_date = tr("loading")
+    label_update.configure(text=tr("update", date=displayed_date))
+    label_pln.configure(text=tr("amount_pln"))
+    label_waluta.configure(
+        text=tr("amount_foreign", symbol=symbol_waluty[aktualna_waluta])
+    )
+    button_pln.configure(text=tr("convert_to", symbol=symbol_waluty[aktualna_waluta]))
+    button_waluta.configure(text=tr("convert_pln"))
+    copy_button_pln.configure(text=tr("copy"))
+    copy_button_waluta.configure(text=tr("copy"))
+    reformat_result_label(label_waluta_result, symbol_waluty[aktualna_waluta])
+    reformat_result_label(label_pln_result, "zł" if current_language == "pl" else "PLN")
+    calculator_title.configure(text=tr("calculator"))
+    calculator_history_info.configure(text=tr("history"))
+    calculator_copy_button.configure(text=tr("copy_currency"))
+    top_btn.configure(text=f"{tr('pin')}: {'ON' if is_topmost else 'OFF'}")
+    support_button.configure(text=tr("support"))
+    about_btn.configure(text=tr("about"))
+    ukryj_dymek_aktualizacji()
+    ukryj_dymek_kwoty()
+    odswiez_wyswietlacz_kalkulatora()
+    odswiez_historie_kalkulatora()
+
+
+language_selector = ctk.CTkSegmentedButton(
+    main_content,
+    values=["PL", "EN"],
+    width=76,
+    height=28,
+    corner_radius=8,
+    border_width=1,
+    fg_color=COLOR_INPUT,
+    selected_color=COLOR_ACCENT,
+    selected_hover_color=COLOR_ACCENT_HOVER,
+    unselected_color=COLOR_INPUT,
+    unselected_hover_color=COLOR_CARD_HOVER,
+    text_color=COLOR_TEXT,
+    font=ctk.CTkFont("Segoe UI", 10, "bold"),
+    command=change_language,
+)
+language_selector.place(x=590, y=28, anchor="ne")
+language_selector.set("PL")
 
 root.after(150, lambda: ustaw_walute("EUR"))
 root.bind("<KeyPress>", obsluz_klawiature_kalkulatora)

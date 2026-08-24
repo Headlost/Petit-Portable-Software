@@ -1,0 +1,4 @@
+pgeocode
+pandas
+customtkinter
+geopy
